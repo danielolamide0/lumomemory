@@ -49,13 +49,19 @@ class LumoAgent:
 
     def _initialize_llm(self):
         try:
+            # Get API key from Streamlit secrets
+            if 'gemini' not in st.secrets:
+                raise ValueError("Gemini API key not found in Streamlit secrets")
+            
+            api_key = st.secrets["gemini"]["api_key"]
+            
             # Configure Gemini API
-            genai.configure(api_key="AIzaSyDWl8O9jtc49XeJmIKUDH0deg9fVG_YJ2Y")
+            genai.configure(api_key=api_key)
             
             llm = ChatGoogleGenerativeAI(
                 model=self.model_name,
                 temperature=0.7,
-                google_api_key="AIzaSyDWl8O9jtc49XeJmIKUDH0deg9fVG_YJ2Y"
+                google_api_key=api_key
             )
             # Test with a simple invoke to ensure it's working
             llm.invoke("Hello!") 
@@ -63,7 +69,7 @@ class LumoAgent:
             return llm
         except Exception as e:
             print(f"Error initializing Google AI LLM: {e}")
-            print("Please ensure your Google Gemini API Key is properly configured.")
+            print("Please ensure your Google Gemini API Key is properly configured in Streamlit secrets.")
             return None
 
     def _call_toy_llm(self, state: MessagesState):
