@@ -4,6 +4,7 @@ import os
 import uuid
 import streamlit as st
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,7 +15,7 @@ from langgraph.graph import StateGraph, END, MessagesState
 from langgraph.checkpoint.memory import MemorySaver
 
 # --- Configuration ---
-MODEL_NAME = "gemini-2.5-flash-preview-04-17" 
+MODEL_NAME = "gemini-pro"  # Using gemini-pro instead of flash preview
 
 # --- Default System Prompt for the AI Toy ---
 DEFAULT_AI_TOY_SYSTEM_PROMPT = """
@@ -48,19 +49,13 @@ class LumoAgent:
 
     def _initialize_llm(self):
         try:
-            # Configure Google Cloud credentials from Streamlit secrets
-            if 'gcp' in st.secrets:
-                os.environ["GOOGLE_CLOUD_PROJECT"] = st.secrets["gcp"]["project_id"]
-                os.environ["GOOGLE_CLOUD_LOCATION"] = st.secrets["gcp"]["location"]
-                
-                # Set up service account credentials
-                if 'service_account' in st.secrets["gcp"]:
-                    service_account_info = st.secrets["gcp"]["service_account"]
-                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_info
-
+            # Configure Gemini API
+            genai.configure(api_key="AIzaSyDWl8O9jtc49XeJmIKUDH0deg9fVG_YJ2Y")
+            
             llm = ChatGoogleGenerativeAI(
                 model=self.model_name,
                 temperature=0.7,
+                google_api_key="AIzaSyDWl8O9jtc49XeJmIKUDH0deg9fVG_YJ2Y"
             )
             # Test with a simple invoke to ensure it's working
             llm.invoke("Hello!") 
@@ -68,7 +63,7 @@ class LumoAgent:
             return llm
         except Exception as e:
             print(f"Error initializing Google AI LLM: {e}")
-            print("Please ensure your Google Cloud credentials are properly configured in Streamlit secrets.")
+            print("Please ensure your Google Gemini API Key is properly configured.")
             return None
 
     def _call_toy_llm(self, state: MessagesState):
